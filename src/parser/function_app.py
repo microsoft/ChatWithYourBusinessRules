@@ -1,31 +1,40 @@
+import json, logging
 import azure.functions as func
-import logging
 
-# https://github.com/Azure/azure-functions-sql-extension/tree/main/samples/samples-python-v2
-# https://github.com/Azure/azure-functions-python-worker/blob/dev/tests/endtoend/sql_functions/sql_functions_stein/function_app.py
-# Learn more at https://aka.ms/pythonprogrammingmodel 
+import utils.constants as constants
 
 app = func.FunctionApp()
-    
+
 @app.function_name(name="ProcessChanges")
 @app.sql_trigger(
     arg_name="changes",
-    table_name="Table",
-    connection_string_setting="SourceConnectionString"
+    table_name="productMapping",
+    connection_string_setting="ReferenceDataConnectionString"
 )
 @app.sql_output(
-    arg_name="o",
-    command_text="[dbo].[Table]",
-    connection_string_setting="DestinationConnectionString"
+    arg_name="enhancements",
+    command_text="enhancedProductMapping",
+    connection_string_setting="ReferenceDataConnectionString"
 )
-@app.sql_output(
-    arg_name="bo",
-    command_text="[dbo].[Table]",
-    connection_string_settings="BREConnectionString"
-)
-def process_changes(
-    changes: str,
-    o: func.Out[func.SqlRow],
-    bo: func.Out[func.SqlRow]
-) -> None:
-    pass
+def process_changes(changes: str, enhancements: func.Out[func.SqlRowList]):
+    changes_obj = json.loads(changes)
+    data = [func.SqlRow.from_dict(change["Item"]) for change in changes_obj if change["Operation"] != constants.SQL_DELETE]
+    enhancements.set(data)
+
+    # data_to_upsert = [
+    #     func.SqlRow.from_dict(
+    #         {
+    #             "name": "offer",
+    #             "id": 1,
+    #             "state": "active",
+    #             "value": "offer x"
+    #         }),
+    #     func.SqlRow.from_dict(
+    #         {
+    #             "name": "offer",
+    #             "id": 2,
+    #             "state": "active",
+    #             "value": "offer"
+    #         }
+    #     )
+    # ]
