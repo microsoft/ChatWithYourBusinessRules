@@ -8,7 +8,7 @@ GET_MAPS_TYPE_3_COMMAND_TEXT = "SELECT [Code], [Mapping_ID], [Short_Descr], [Lon
 PROCESS_DELETE_COMMAND_TEXT = "DELETE FROM [dbo].[enhancedProductMapping] WHERE [id] = @id"
 
 TRANSLATE_TEMPLATE = """
-You are an assistance for question-answering tasks.
+You are an assistant for question-answering tasks.
 Use the following pieces of retrieved context to answer the question.
 If you don't know the answer, just say that you don't know. 
 Use three sentences maximum and keep the answer concise.

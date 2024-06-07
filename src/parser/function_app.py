@@ -96,7 +96,7 @@ def enrich_changes(params: dict):
                 "Short_Descr": val["Short_Descr"],
                 "Long_Descr": val["Long_Descr"]
             })
-            expression = expression.replace(val["Code", val["Hash"]])
+            expression = expression.replace(val["Code"], val["Hash"])
 
     for val in map1:
         expression = expression.replace(val["Hash"], "\"" + val["Long_Descr"] + "\"" if val["Long_Descr"] else "\"" + val["Short_Descr"] + "\"")
