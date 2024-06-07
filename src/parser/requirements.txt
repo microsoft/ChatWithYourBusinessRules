@@ -5,5 +5,5 @@
 azure-functions
 azure-functions-durable
 azure-identity
-pandas
-pyodbc
+langchain
+langchain-openai

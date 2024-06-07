@@ -1,11 +1,17 @@
 import json, hashlib, logging, os
-import pandas as pd
 import azure.functions as func
 import azure.durable_functions as df
+
+from langchain_openai import AzureChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 
 from utils.data import get_conn
 import utils.constants as constants
 
+os.environ["OPEN_API_VERSION"] = os.environ["AZURE_OPENAI_API_VERSION"]
 app = df.DFApp()
 
 @app.sql_trigger(arg_name="changes", table_name="productMapping", connection_string_setting="ReferenceDataConnectionString")
@@ -110,6 +116,29 @@ def enrich_changes(params: dict):
 
 @app.activity_trigger(input_name="params")
 def translate_changes(params: dict):
+    model = AzureChatOpenAI(
+        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
+        azure_deployment=os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        openai_api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+        temperature=0.5,
+        max_tokens = 2048
+    )
+
+    prompt = PromptTemplate(
+        input_variables=["cat1_codes", "cat2_codes", "cat3_codes", "expression"],
+        template = constants.TRANSLATE_TEMPLATE
+    )
+    
+    parser = StrOutputParser()
+    chain = prompt | model | parser
+    translation = chain.invoke({
+        "cat1_codes": params["cat1_codes"],
+        "cat2_codes": params["cat2_codes"],
+        "cat3_codes": params["cat3_codes"],
+        "expression": params["enhanced_value"]
+    })
+
+    params["translated_value"] = translation
     return params
 
 @app.activity_trigger(input_name="item")
