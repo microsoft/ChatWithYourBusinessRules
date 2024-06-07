@@ -22,7 +22,8 @@ def process_changes_orchestrator(context):
     for change in changes_obj:
         if ((change["Operation"] == constants.SQL_INSERT) or (change["Operation"] == constants.SQL_UPDATE)):
             enriched_changes = yield context.call_activity("enrich_changes", { "Map1": maps[0], "Map2": maps[1], "Map3": maps[2], "Item": change["Item"] })
-            result = yield context.call_activity("process_upsert", enriched_changes)
+            translated_changes = yield context.call_activity("translate_changes", enriched_changes)
+            result = yield context.call_activity("process_upsert", translated_changes)
         elif (change["Operation"] == constants.SQL_DELETE):
             result = yield context.call_activity("process_delete", change["Item"]["id"])
         else:
@@ -64,29 +65,41 @@ def enrich_changes(params: dict):
     map1_matches = []
     for val in map1:
         if val["Code"] in expression:
-            map1_matches.append(val["Short_Descr"])
+            map1_matches.append({
+                "Code": val["Code"],
+                "Short_Descr": val["Short_Descr"],
+                "Long_Descr": val["Long_Descr"]
+            })
             expression = expression.replace(val["Code"], val["Hash"])
     
     map2_matches = []
     for val in map2:
         if val["Code"] in expression:
-            map2_matches.append(val["Short_Descr"])
+            map2_matches.append({
+                "Code": val["Code"],
+                "Short_Descr": val["Short_Descr"],
+                "Long_Descr": val["Long_Descr"]
+            })
             expression = expression.replace(val["Code"], val["Hash"])
 
     map3_matches = []
     for val in map3:
         if val["Code"] in expression:
-            map3_matches.append(val["Short_Descr"])
+            map3_matches.append({
+                "Code": val["Code"],
+                "Short_Descr": val["Short_Descr"],
+                "Long_Descr": val["Long_Descr"]
+            })
             expression = expression.replace(val["Code", val["Hash"]])
 
     for val in map1:
-        expression = expression.replace(val["Hash"], "[" + val["Short_Descr"] + "]")
+        expression = expression.replace(val["Hash"], "\"" + val["Long_Descr"] + "\"" if val["Long_Descr"] else "\"" + val["Short_Descr"] + "\"")
 
     for val in map2:
-        expresison = expression.replace(val["Hash"], "[" + val["Short_Descr"] + "]")
+        expresison = expression.replace(val["Hash"], "\"" + val["Long_Descr"] + "\"" if val["Long_Descr"] else "\"" + val["Short_Descr"] + "\"")
 
     for val in map3:
-        expression = expression.replace(val["Hash"], "[" + val["Short_Descr"] + "]")
+        expression = expression.replace(val["Hash"], "\"" + val["Long_Descr"] + "\"" if val["Long_Descr"] else "\"" + val["Short_Descr"] + "\"")
 
     item["cat1_codes"] = json.dumps(map1_matches)
     item["cat2_codes"] = json.dumps(map2_matches)
@@ -94,6 +107,10 @@ def enrich_changes(params: dict):
     item["enhanced_value"] = expression
 
     return item
+
+@app.activity_trigger(input_name="params")
+def translate_changes(params: dict):
+    return params
 
 @app.activity_trigger(input_name="item")
 @app.sql_output(arg_name="row", command_text="[dbo].[enhancedProductMapping]", connection_string_setting="ReferenceDataConnectionString")
@@ -104,24 +121,3 @@ def process_upsert(item, row: func.Out[func.SqlRow]):
 @app.sql_input(arg_name="row", command_text=constants.PROCESS_DELETE_COMMAND_TEXT, command_type="Text", parameters="@id={id}", connection_string_setting="ReferenceDataConnectionString")
 def process_delete(id, row: func.SqlRowList):
     pass
-
-
-# @app.function_name(name="ProcessChanges")
-# @app.sql_trigger(
-#     arg_name="changes",
-#     table_name="productMapping",
-#     connection_string_setting="ReferenceDataConnectionString"
-# )
-# @app.sql_output(
-#     arg_name="enhancements",
-#     command_text="enhancedProductMapping",
-#     connection_string_setting="ReferenceDataConnectionString"
-# )
-# def process_changes(changes: str, enhancements: func.Out[func.SqlRowList]):
-#     global map_data
-#     if map_data is None:
-#         conn = get_conn(os.environ["ReferenceDataOdbcConnectionString"])
-
-#     changes_obj = json.loads(changes)
-#     data = [func.SqlRow.from_dict(change["Item"]) for change in changes_obj if change["Operation"] != constants.SQL_DELETE]
-#     enhancements.set(data)
