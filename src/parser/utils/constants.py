@@ -7,6 +7,9 @@ GET_MAPS_TYPE_2_COMMAND_TEXT = "SELECT [Code], [Mapping_ID], [Short_Descr], [Lon
 GET_MAPS_TYPE_3_COMMAND_TEXT = "SELECT [Code], [Mapping_ID], [Short_Descr], [Long_Descr] FROM [dbo].[fieldMapping] WHERE [Mapping_ID] LIKE 'CustomField' ORDER BY LEN([Code]) DESC"
 PROCESS_DELETE_COMMAND_TEXT = "DELETE FROM [dbo].[enhancedProductMapping] WHERE [id] = @id"
 
+CLEAN_RULES_DATA_COMMAND_TEXT = "WITH RecursiveDelete AS (SELECT [RuleName] FROM [dbo].[Rules] WHERE [RuleName] = @RuleName UNION ALL SELECT r.[RuleName] from [dbo].[Rules] r INNER JOIN RecursiveDelete rd ON r.[RuleNameFK] = rd.[RuleName]) DELETE FROM [dbo].[Rules] WHERE [RuleName] IN (SELECT [RuleName] FROM RecursiveDelete);"
+
+
 TRANSLATE_TEMPLATE = """
 You are an assistant for question-answering tasks.
 Use the following pieces of retrieved context to answer the question.
