@@ -29,10 +29,11 @@ public class GetEligibility
         )] IEnumerable<DatabaseRule> databaseRules)
     {
         _logger.LogInformation("C# HTTP trigger function processed a request.");
-
+        
         using var reader = new StreamReader(req.Body);
         var requestBody = await reader.ReadToEndAsync();
-        List<string> input = JsonSerializer.Deserialize<List<string>>(requestBody);
+        List<string>? input = JsonSerializer.Deserialize<List<string>>(requestBody);
+        if (input == null) return new BadRequestObjectResult("Please provide a list of strings in the request body");
 
         var rules = GetRules(databaseRules);
         var workflow = new Workflow
@@ -43,12 +44,13 @@ public class GetEligibility
 
         var engine = new RulesEngine.RulesEngine(new[] { workflow });
         var results = await engine.ExecuteAllRulesAsync("Eligibility", input);
+        var eligibilities = new Dictionary<string, bool>();
         foreach (var result in results)
         {
-            _logger.LogInformation($"Rule: {result.Rule.RuleName}, Result: {result.IsSuccess}");
+            eligibilities[result.Rule.RuleName] = result.IsSuccess;
         }
 
-        return new OkObjectResult("Welcome to Azure Functions!");
+        return new OkObjectResult(eligibilities);
     }
 
     private static List<Rule> GetRules(IEnumerable<DatabaseRule> databaseRules)
