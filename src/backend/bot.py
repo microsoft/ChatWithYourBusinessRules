@@ -122,30 +122,7 @@ class MyBot(ActivityHandler):
                            description="useful when the questions includes the term: docsearch",
                            callback_manager=cb_manager, verbose=False)
         
-        book_indexes = ["cogsrch-index-books"]
-        
-        book_search = DocSearchAgent(llm=llm, indexes=book_indexes,
-                           k=6, reranker_th=1,
-                           sas_token=os.environ['BLOB_SAS_TOKEN'],
-                           name="booksearch",
-                           description="useful when the questions includes the term: booksearch",
-                           callback_manager=cb_manager, verbose=False)
-        
-        www_search = BingSearchAgent(llm=llm, k=10, callback_manager=cb_manager,
-                                    name="bing",
-                                    description="useful when the questions includes the term: bing")
-        
-        sql_search = SQLSearchAgent(llm=llm, k=30, callback_manager=cb_manager,
-                            name="sqlsearch",
-                            description="useful when the questions includes the term: sqlsearch",
-                            verbose=False)
-        
-        chatgpt_search = ChatGPTTool(llm=llm, callback_manager=cb_manager,
-                             name="chatgpt",
-                            description="useful when the questions includes the term: chatgpt",
-                            verbose=False)
-        
-        tools = [doc_search, book_search, www_search, sql_search, chatgpt_search]
+        tools = [doc_search]
         
         agent = create_openai_tools_agent(llm, tools, CUSTOM_CHATBOT_PROMPT)
         agent_executor = AgentExecutor(agent=agent, tools=tools)
