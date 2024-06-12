@@ -1,0 +1,422 @@
+{
+    "RuleName": "608de2bb-9c57-46eb-bb7c-a86c8a583245",
+    "Expression": null,
+    "Operator": "And",
+    "Rules": [
+        {
+            "RuleName": "a744d0fb-82ee-4976-9c3c-8c0694c7451c",
+            "Expression": null,
+            "Operator": "And",
+            "Rules": [
+                {
+                    "RuleName": "56e1dcda-9a19-4122-a92a-9b12de5677d8",
+                    "Expression": null,
+                    "Operator": "Or",
+                    "Rules": [
+                        {
+                            "RuleName": "e846f1c3-d90a-423b-b810-8612ddb2f000",
+                            "Expression": null,
+                            "Operator": "Or",
+                            "Rules": [
+                                {
+                                    "RuleName": "c0ba8194-9699-4e25-aaaf-aa3953871947",
+                                    "Expression": null,
+                                    "Operator": "And",
+                                    "Rules": [
+                                        {
+                                            "RuleName": "e198f1d5-dba0-4d54-9fbf-2f30912cd34f",
+                                            "Expression": null,
+                                            "Operator": "And",
+                                            "Rules": [
+                                                {
+                                                    "RuleName": "82580baa-a7a6-4cb1-87a4-5a8bd87d5dc5",
+                                                    "Expression": "input1.Contains(\"97126\")",
+                                                    "Operator": null,
+                                                    "Rules": null
+                                                },
+                                                {
+                                                    "RuleName": "daf068eb-8e98-4a32-bcf3-aa76f0ca3392",
+                                                    "Expression": "input1.Contains(\"97350\")",
+                                                    "Operator": null,
+                                                    "Rules": null
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "RuleName": "8b2a7020-d304-4f56-92a0-723ca9cf1380",
+                                            "Expression": null,
+                                            "Operator": "Or",
+                                            "Rules": [
+                                                {
+                                                    "RuleName": "011f2912-127a-4ff3-b423-87588e1410ce",
+                                                    "Expression": null,
+                                                    "Operator": "Or",
+                                                    "Rules": [
+                                                        {
+                                                            "RuleName": "7fb159c6-28ac-43b8-9e19-3af4c51c1f6a",
+                                                            "Expression": null,
+                                                            "Operator": "Or",
+                                                            "Rules": [
+                                                                {
+                                                                    "RuleName": "c5e32f63-1abe-44b2-a5fc-6f599910bc3e",
+                                                                    "Expression": null,
+                                                                    "Operator": "Or",
+                                                                    "Rules": [
+                                                                        {
+                                                                            "RuleName": "02f0f3c7-add3-4894-88f8-c9c7619d94e1",
+                                                                            "Expression": null,
+                                                                            "Operator": "Or",
+                                                                            "Rules": [
+                                                                                {
+                                                                                    "RuleName": "ea74ffb6-f4d1-402a-85f1-e10fbef7a08e",
+                                                                                    "Expression": null,
+                                                                                    "Operator": "Or",
+                                                                                    "Rules": [
+                                                                                        {
+                                                                                            "RuleName": "d29f9848-40c7-49b0-b9fd-9a38cd780b08",
+                                                                                            "Expression": null,
+                                                                                            "Operator": "Or",
+                                                                                            "Rules": [
+                                                                                                {
+                                                                                                    "RuleName": "a5dbfd63-6854-4c23-951e-2d3dae1f0d06",
+                                                                                                    "Expression": null,
+                                                                                                    "Operator": "Or",
+                                                                                                    "Rules": [
+                                                                                                        {
+                                                                                                            "RuleName": "b4394ec1-f2c4-40c3-b39f-55a30f564a1b",
+                                                                                                            "Expression": "input1.Contains(\"97838\")",
+                                                                                                            "Operator": null,
+                                                                                                            "Rules": null
+                                                                                                        },
+                                                                                                        {
+                                                                                                            "RuleName": "58075022-8b71-463b-9824-76a7d53dad5c",
+                                                                                                            "Expression": "input1.Contains(\"80118\")",
+                                                                                                            "Operator": null,
+                                                                                                            "Rules": null
+                                                                                                        }
+                                                                                                    ]
+                                                                                                },
+                                                                                                {
+                                                                                                    "RuleName": "7a695949-5d94-4864-a7ce-26e87119ec25",
+                                                                                                    "Expression": "input1.Contains(\"97418\")",
+                                                                                                    "Operator": null,
+                                                                                                    "Rules": null
+                                                                                                }
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "RuleName": "0b51a849-b494-45d4-a8b2-53abfb15731e",
+                                                                                            "Expression": "input1.Contains(\"97422\")",
+                                                                                            "Operator": null,
+                                                                                            "Rules": null
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "RuleName": "9e5e0866-c7c9-45e9-b7b5-698306a6697b",
+                                                                                    "Expression": "input1.Contains(\"97430\")",
+                                                                                    "Operator": null,
+                                                                                    "Rules": null
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "RuleName": "e3c99f4c-9af8-41e4-b5b7-db7610b17973",
+                                                                            "Expression": "input1.Contains(\"97564\")",
+                                                                            "Operator": null,
+                                                                            "Rules": null
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "RuleName": "dae51ac5-09e5-4e06-9103-569d5457ad38",
+                                                                    "Expression": "input1.Contains(\"97640\")",
+                                                                    "Operator": null,
+                                                                    "Rules": null
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "RuleName": "3dc65e09-3982-462f-929e-19ff3f595e4d",
+                                                            "Expression": "input1.Contains(\"97632\")",
+                                                            "Operator": null,
+                                                            "Rules": null
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "RuleName": "a3b3073a-f735-4f84-9988-72aa431be953",
+                                                    "Expression": "input1.Contains(\"97536\")",
+                                                    "Operator": null,
+                                                    "Rules": null
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "RuleName": "37ff8726-bc70-4762-851a-22ee49a6f67c",
+                                    "Expression": null,
+                                    "Operator": "And",
+                                    "Rules": [
+                                        {
+                                            "RuleName": "2d12abfc-e587-4a85-b6db-5a8c1bb01ba1",
+                                            "Expression": null,
+                                            "Operator": "And",
+                                            "Rules": [
+                                                {
+                                                    "RuleName": "433f2e8e-02dc-4303-933a-1823ba75064a",
+                                                    "Expression": null,
+                                                    "Operator": "Or",
+                                                    "Rules": [
+                                                        {
+                                                            "RuleName": "b534d43a-ce72-4a01-aaec-b0a654e55dba",
+                                                            "Expression": null,
+                                                            "Operator": "Or",
+                                                            "Rules": [
+                                                                {
+                                                                    "RuleName": "9384db23-e310-4e9c-bec5-2c79fa39354b",
+                                                                    "Expression": null,
+                                                                    "Operator": "Or",
+                                                                    "Rules": [
+                                                                        {
+                                                                            "RuleName": "e7fd119b-bf1c-4815-adb9-54aa78b6d6eb",
+                                                                            "Expression": "input1.Contains(\"97028\")",
+                                                                            "Operator": null,
+                                                                            "Rules": null
+                                                                        },
+                                                                        {
+                                                                            "RuleName": "2f1f4997-80e1-40e3-a3f5-075ac3e3582b",
+                                                                            "Expression": "input1.Contains(\"97029\")",
+                                                                            "Operator": null,
+                                                                            "Rules": null
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "RuleName": "43e0413b-fbcd-44b9-bb1d-7fc607b7a7e8",
+                                                                    "Expression": "input1.Contains(\"97170\")",
+                                                                    "Operator": null,
+                                                                    "Rules": null
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "RuleName": "085e24c3-0ae1-4bc9-8b24-487487bf7148",
+                                                            "Expression": "input1.Contains(\"97172\")",
+                                                            "Operator": null,
+                                                            "Rules": null
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "RuleName": "a49fb872-2469-42b3-8324-bde3b197a1c8",
+                                                    "Expression": "!input1.Contains(\"97180\")",
+                                                    "Operator": null,
+                                                    "Rules": null
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "RuleName": "4512e0b5-fbb1-40a5-bc23-920e56f7b5a0",
+                                            "Expression": null,
+                                            "Operator": "Or",
+                                            "Rules": [
+                                                {
+                                                    "RuleName": "58482a22-edab-4fe8-bed4-3123a60d7637",
+                                                    "Expression": null,
+                                                    "Operator": "Or",
+                                                    "Rules": [
+                                                        {
+                                                            "RuleName": "4e5fe64c-aa22-4926-b3a8-0cee7d385574",
+                                                            "Expression": null,
+                                                            "Operator": "Or",
+                                                            "Rules": [
+                                                                {
+                                                                    "RuleName": "0e112e6e-2109-4f3d-a93f-0b152d11d9ce",
+                                                                    "Expression": null,
+                                                                    "Operator": "Or",
+                                                                    "Rules": [
+                                                                        {
+                                                                            "RuleName": "fc885385-02a1-4309-8f9c-9edb05fe82e8",
+                                                                            "Expression": null,
+                                                                            "Operator": "Or",
+                                                                            "Rules": [
+                                                                                {
+                                                                                    "RuleName": "1845910a-a670-4152-b5f2-cf858cf79bdc",
+                                                                                    "Expression": null,
+                                                                                    "Operator": "Or",
+                                                                                    "Rules": [
+                                                                                        {
+                                                                                            "RuleName": "6a8b7d55-d9df-4630-86a2-b6723aac8ba5",
+                                                                                            "Expression": "input1.Contains(\"97546\")",
+                                                                                            "Operator": null,
+                                                                                            "Rules": null
+                                                                                        },
+                                                                                        {
+                                                                                            "RuleName": "9702803e-4648-4cce-b1ee-8752dbd389b3",
+                                                                                            "Expression": "input1.Contains(\"97610\")",
+                                                                                            "Operator": null,
+                                                                                            "Rules": null
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "RuleName": "c302939e-34cc-4a41-9128-bb637bdd2d94",
+                                                                                    "Expression": "input1.Contains(\"97644\")",
+                                                                                    "Operator": null,
+                                                                                    "Rules": null
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "RuleName": "07f3efd3-d6e1-46ea-84f0-91f67459a9ca",
+                                                                            "Expression": "input1.Contains(\"97814\")",
+                                                                            "Operator": null,
+                                                                            "Rules": null
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "RuleName": "56d38f73-6a2f-41ce-b345-e97a53369055",
+                                                                    "Expression": "input1.Contains(\"97444\")",
+                                                                    "Operator": null,
+                                                                    "Rules": null
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "RuleName": "fddd2884-55db-436b-9c16-716ed58ab3b2",
+                                                            "Expression": "input1.Contains(\"97550\")",
+                                                            "Operator": null,
+                                                            "Rules": null
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "RuleName": "7f746a7e-dd87-443f-a0d3-222c7acfc91d",
+                                                    "Expression": "input1.Contains(\"97386\")",
+                                                    "Operator": null,
+                                                    "Rules": null
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "RuleName": "f3c8f89a-6ae9-4c38-944b-3379a74b15b8",
+                            "Expression": null,
+                            "Operator": "And",
+                            "Rules": [
+                                {
+                                    "RuleName": "ecfe2e4a-283e-4245-a01c-60658c85b264",
+                                    "Expression": null,
+                                    "Operator": "Or",
+                                    "Rules": [
+                                        {
+                                            "RuleName": "61308875-3398-47e1-80f3-4f2d96d2f925",
+                                            "Expression": "input1.Contains(\"97344\")",
+                                            "Operator": null,
+                                            "Rules": null
+                                        },
+                                        {
+                                            "RuleName": "04a8cfc1-d73f-41b8-8c2c-57306dbbaf2a",
+                                            "Expression": "input1.Contains(\"97346\")",
+                                            "Operator": null,
+                                            "Rules": null
+                                        }
+                                    ]
+                                },
+                                {
+                                    "RuleName": "5c7b1211-5f34-4c7c-a994-ce41a56465c2",
+                                    "Expression": null,
+                                    "Operator": "Or",
+                                    "Rules": [
+                                        {
+                                            "RuleName": "2d519edc-22dc-43f7-a965-f4c164db2a97",
+                                            "Expression": null,
+                                            "Operator": "Or",
+                                            "Rules": [
+                                                {
+                                                    "RuleName": "3054a569-56c1-4006-a82a-cf5a097cb138",
+                                                    "Expression": null,
+                                                    "Operator": "Or",
+                                                    "Rules": [
+                                                        {
+                                                            "RuleName": "b3915276-a350-482e-984d-8a84383c4317",
+                                                            "Expression": null,
+                                                            "Operator": "Or",
+                                                            "Rules": [
+                                                                {
+                                                                    "RuleName": "37a25bfc-dbc8-4f94-8cb8-e4cf73a53b5f",
+                                                                    "Expression": null,
+                                                                    "Operator": "Or",
+                                                                    "Rules": [
+                                                                        {
+                                                                            "RuleName": "03c6d40f-6290-467b-ac4e-6ddeca7e9d2e",
+                                                                            "Expression": "input1.Contains(\"97418\")",
+                                                                            "Operator": null,
+                                                                            "Rules": null
+                                                                        },
+                                                                        {
+                                                                            "RuleName": "b6a0a711-71e0-471e-882d-729e96652b1e",
+                                                                            "Expression": "input1.Contains(\"97422\")",
+                                                                            "Operator": null,
+                                                                            "Rules": null
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "RuleName": "24864012-1b22-47ae-8615-5243d449e252",
+                                                                    "Expression": "input1.Contains(\"97430\")",
+                                                                    "Operator": null,
+                                                                    "Rules": null
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "RuleName": "524957de-2c30-44bd-901c-01a3e529c0d8",
+                                                            "Expression": "input1.Contains(\"97632\")",
+                                                            "Operator": null,
+                                                            "Rules": null
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "RuleName": "111e0c7f-be75-498e-be9a-8e9ed8022207",
+                                                    "Expression": "input1.Contains(\"97546\")",
+                                                    "Operator": null,
+                                                    "Rules": null
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "RuleName": "355755c8-7614-4baf-89bc-57a423e49ea4",
+                                            "Expression": "input1.Contains(\"97564\")",
+                                            "Operator": null,
+                                            "Rules": null
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "RuleName": "214dbd1d-1d59-46e7-9e23-05f0ad839a11",
+                    "Expression": "!input1.Contains(\"82118\")",
+                    "Operator": null,
+                    "Rules": null
+                }
+            ]
+        },
+        {
+            "RuleName": "318534de-2e5e-4b62-96ae-5e80ad06c072",
+            "Expression": "!input1.Contains(\"103086\")",
+            "Operator": null,
+            "Rules": null
+        }
+    ]
+}
