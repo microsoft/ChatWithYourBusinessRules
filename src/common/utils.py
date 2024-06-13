@@ -782,5 +782,14 @@ class APISearchAgent(BaseTool):
             print(e)
             return str(e)  # Return an error indicator
 
+class EchoToolInput(BaseModel):
+    text: str = Field(description="The text to echo back")
 
-
+class EchoTool(BaseTool):
+    name = "Echo"
+    description = "Echoes back the input text"
+    args_schema: Type[BaseModel] = EchoToolInput
+    return_direct: bool = False
+    
+    def _run(self, text: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        return text
