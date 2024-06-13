@@ -125,7 +125,7 @@ class MyBot(ActivityHandler):
         
         # tools = [doc_search]
         
-        echo_tool = EchoTool()
+        echo_tool = EchoTool(callback_manager=cb_manager)
         tools = [echo_tool]
 
         agent = create_openai_tools_agent(llm, tools, CUSTOM_CHATBOT_PROMPT)
