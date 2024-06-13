@@ -27,7 +27,8 @@ from common.utils import (
     CSVTabularAgent, 
     SQLSearchAgent, 
     ChatGPTTool, 
-    BingSearchAgent
+    BingSearchAgent,
+    EchoTool
 )
 from common.prompts import CUSTOM_CHATBOT_PROMPT, WELCOME_MESSAGE
 
@@ -113,17 +114,20 @@ class MyBot(ActivityHandler):
                               max_tokens=1500, callback_manager=cb_manager, streaming=True)
 
         # Initialize our Tools/Experts
-        doc_indexes = ["cogsrch-index-files", "cogsrch-index-csv"]
+        # doc_indexes = ["cogsrch-index-files", "cogsrch-index-csv"]
         
-        doc_search = DocSearchAgent(llm=llm, indexes=doc_indexes,
-                           k=6, reranker_th=1,
-                           sas_token=os.environ['BLOB_SAS_TOKEN'],
-                           name="docsearch",
-                           description="useful when the questions includes the term: docsearch",
-                           callback_manager=cb_manager, verbose=False)
+        # doc_search = DocSearchAgent(llm=llm, indexes=doc_indexes,
+        #                   k=6, reranker_th=1,
+        #                   sas_token=os.environ['BLOB_SAS_TOKEN'],
+        #                   name="docsearch",
+        #                   description="useful when the questions includes the term: docsearch",
+        #                   callback_manager=cb_manager, verbose=False)
         
-        tools = [doc_search]
+        # tools = [doc_search]
         
+        echo_tool = EchoTool()
+        tools = [echo_tool]
+
         agent = create_openai_tools_agent(llm, tools, CUSTOM_CHATBOT_PROMPT)
         agent_executor = AgentExecutor(agent=agent, tools=tools)
         brain_agent_executor = RunnableWithMessageHistory(
