@@ -2,6 +2,7 @@ import json, requests
 
 from typing import Type, Optional
 import asyncio
+import requests
 
 from langchain_openai import AzureChatOpenAI
 from langchain.agents import AgentExecutor, create_openai_tools_agent
@@ -16,7 +17,7 @@ from langchain.callbacks.manager import CallbackManagerForToolRun
 
 from prompts import CUSTOM_CHATBOT_PROMPT
 from session_history import get_session_history
-from config import AzureOpenAIConfig, AzureSearchConfig
+from config import AzureOpenAIConfig, AzureSearchConfig, EligibilityEndpointConfig
 
 async def send_request_to_agent_async(question: str, user_id: str, session_id: str, cb_handler: BaseCallbackHandler):
     cb_manager = CallbackManager(handlers=[cb_handler])
@@ -35,8 +36,9 @@ async def send_request_to_agent_async(question: str, user_id: str, session_id: s
 
     code_2_text_tool = Code2TextTool(run_manager=cb_manager)
     text_2_code_tool = Text2CodeTool(run_manager=cb_manager)
+    eligibility_tool = EligibilityTool(run_manager=cb_manager)
     
-    tools = [code_2_text_tool, text_2_code_tool]
+    tools = [code_2_text_tool, text_2_code_tool, eligibility_tool]
 
     agent = create_openai_tools_agent(llm, tools, CUSTOM_CHATBOT_PROMPT)
     agent_executor = AgentExecutor(agent=agent, tools=tools)
@@ -88,16 +90,20 @@ class EchoTool(BaseTool):
         return text
     
 class EligibilityToolInput(BaseModel):
-    codes: list[str] = Field(description="A list of numeric codes to check the offer eligibility for")
+    codes: list[str] = Field(description="A list of numeric customer attribute codes to check the offer eligibility for")
 
 class EligibilityTool(BaseTool):
     name = "Eligibility"
-    description = "Given a list of numeric customer codes, checks the eligibility for a special offer"
+    description = "Given a list of numeric attribute codes for a single customer, checks the eligibility of that customer for a special offer"
     args_schema: Type[BaseModel] = EligibilityToolInput
     return_direct: bool = False
     
-    def _run(self, codes: list[str], run_manager: Optional[CallbackManagerForToolRun] = None) -> list[tuple[str, bool]]:
-        return []
+    def _run(self, codes: list[str], run_manager: Optional[CallbackManagerForToolRun] = None) -> dict:
+        eligibility = requests.post(url=EligibilityEndpointConfig.ENDPOINT, 
+                      headers={"x-functions-key": EligibilityEndpointConfig.FUNCTION_KEY}, 
+                      json=codes)
+        eligibility.raise_for_status()
+        return eligibility.json()
     
 class SearchToolInput(BaseModel):
     question: str = Field(description="The question to search for")    
@@ -207,9 +213,9 @@ if (__name__ == "__main__"):
     session_id = "5678"
     cb_handler = StdOutCallbackHandler()
 
-    while(question != "exit"):
-        question = input("\n\nEnter a question (or \"exit\" to quit): ")
-        if (question == "exit"):
+    while(question != "quit"):
+        question = input("\n\nEnter a question (or \"quit\"): ")
+        if (question == "quit"):
             break
         answer = asyncio.run(send_request_to_agent_async(question, user_id, session_id, cb_handler))
         ## No need to print, the handler does that

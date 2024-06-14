@@ -5,7 +5,7 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path='../backend/credentials.env')
+load_dotenv(dotenv_path='../credentials.env')
 
 class BotConfig:
     """ Bot Configuration """
@@ -36,3 +36,9 @@ class AzureSearchConfig:
     ENDPOINT = os.environ.get("AZURE_SEARCH_ENDPOINT", "")
     API_VERSION = os.environ.get("AZURE_SEARCH_API_VERSION", "")
     SEARCH_KEY = os.environ.get("AZURE_SEARCH_KEY", "")
+
+class EligibilityEndpointConfig:
+    """ Eligibility Endpoint Configuration """
+
+    ENDPOINT = os.environ.get("ELIGIBILITY_ENDPOINT", "")
+    FUNCTION_KEY = os.environ.get("ELIGIBILITY_FUNCTION_KEY", "")

@@ -53,7 +53,7 @@ from langchain_core.documents import Document
 from operator import itemgetter
 from typing import List
 
-from common.prompts import DOCSEARCH_PROMPT
+from prompts import DOCSEARCH_PROMPT
 
 try:
     from .prompts import (AGENT_DOCSEARCH_PROMPT, CSV_PROMPT_PREFIX, MSSQL_AGENT_PREFIX,
