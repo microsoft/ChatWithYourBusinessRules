@@ -29,3 +29,10 @@ class AzureOpenAIConfig:
     API_KEY = os.environ.get("AZURE_OPENAI_API_KEY", "")
     API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION", "")
     MODEL_NAME = os.environ.get("AZURE_OPENAI_MODEL_NAME", "")
+
+class AzureSearchConfig:
+    """ Azure Search Configuration """
+
+    ENDPOINT = os.environ.get("AZURE_SEARCH_ENDPOINT", "")
+    API_VERSION = os.environ.get("AZURE_SEARCH_API_VERSION", "")
+    SEARCH_KEY = os.environ.get("AZURE_SEARCH_KEY", "")
