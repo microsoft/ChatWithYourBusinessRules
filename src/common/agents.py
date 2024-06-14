@@ -83,6 +83,18 @@ class EchoTool(BaseTool):
     def _run(self, text: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         return text
     
+class EligibilityToolInput(BaseModel):
+    codes: list[str] = Field(description="A list of numeric codes to check the offer eligibility for")
+
+class EligibilityTool(BaseTool):
+    name = "Eligibility"
+    description = "Given a list of numeric customer codes, checks the eligibility for a special offer"
+    args_schema: Type[BaseModel] = EligibilityToolInput
+    return_direct: bool = False
+    
+    def _run(self, codes: list[str], run_manager: Optional[CallbackManagerForToolRun] = None) -> list[tuple[str, bool]]:
+        return []
+
 ### Testing ###
 if (__name__ == "__main__"):
     from callbacks import StdOutCallbackHandler
