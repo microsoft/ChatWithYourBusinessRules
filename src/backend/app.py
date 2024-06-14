@@ -4,6 +4,8 @@
 import sys
 import traceback
 from datetime import datetime
+from dotenv import load_dotenv
+load_dotenv("credentials.env")
 
 from aiohttp import web
 from aiohttp.web import Request, Response, json_response
