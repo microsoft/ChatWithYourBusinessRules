@@ -1,4 +1,4 @@
-from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 ####### Welcome Message for the Bot Service #################
 WELCOME_MESSAGE = """

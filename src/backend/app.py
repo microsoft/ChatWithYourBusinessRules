@@ -17,13 +17,13 @@ from botbuilder.core.integration import aiohttp_error_middleware
 from botbuilder.schema import Activity, ActivityTypes
 
 from bot import MyBot
-from config import DefaultConfig
+from common.config import BotConfig
 
-CONFIG = DefaultConfig()
+BOT_CONFIG = BotConfig()
 
 # Create adapter.
 # See https://aka.ms/about-bot-adapter to learn more about how bots work.
-SETTINGS = BotFrameworkAdapterSettings(CONFIG.APP_ID, CONFIG.APP_PASSWORD)
+SETTINGS = BotFrameworkAdapterSettings(BOT_CONFIG.APP_ID, BOT_CONFIG.APP_PASSWORD)
 ADAPTER = BotFrameworkAdapter(SETTINGS)
 
 
@@ -60,7 +60,6 @@ ADAPTER.on_turn_error = on_error
 # Create the Bot
 BOT = MyBot()
 
-
 # Listen for incoming requests on /api/messages
 async def messages(req: Request) -> Response:
     # Main bot message handler.
@@ -83,6 +82,6 @@ APP.router.add_post("/api/messages", messages)
 
 if __name__ == "__main__":
     try:
-        web.run_app(APP, host="localhost", port=CONFIG.PORT)
+        web.run_app(APP, host="localhost", port=BOT_CONFIG.PORT)
     except Exception as error:
         raise error
