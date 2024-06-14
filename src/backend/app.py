@@ -2,6 +2,9 @@
 # Licensed under the MIT License.
 
 import sys
+
+sys.path.append('common')
+
 import traceback
 from datetime import datetime
 from dotenv import load_dotenv

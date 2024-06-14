@@ -5,7 +5,7 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path='../backend/credentials.env')
+load_dotenv(dotenv_path='../credentials.env')
 
 class BotConfig:
     """ Bot Configuration """
