@@ -29,3 +29,9 @@ class AzureOpenAIConfig:
     API_KEY = os.environ.get("AZURE_OPENAI_API_KEY", "")
     API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION", "")
     MODEL_NAME = os.environ.get("AZURE_OPENAI_MODEL_NAME", "")
+
+class EligibilityEndpointConfig:
+    """ Eligibility Endpoint Configuration """
+
+    ENDPOINT = os.environ.get("ELIGIBILITY_ENDPOINT", "")
+    FUNCTION_KEY = os.environ.get("ELIGIBILITY_FUNCTION_KEY", "")

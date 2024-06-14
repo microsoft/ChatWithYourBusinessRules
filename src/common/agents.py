@@ -1,5 +1,6 @@
 from typing import Type, Optional
 import asyncio
+import requests
 
 from langchain_openai import AzureChatOpenAI
 from langchain.agents import AgentExecutor, create_openai_tools_agent
@@ -14,7 +15,7 @@ from langchain.callbacks.manager import CallbackManagerForToolRun
 
 from prompts import CUSTOM_CHATBOT_PROMPT
 from session_history import get_session_history
-from config import AzureOpenAIConfig
+from config import AzureOpenAIConfig, EligibilityEndpointConfig
 
 async def send_request_to_agent_async(question: str, user_id: str, session_id: str, cb_handler: BaseCallbackHandler):
     cb_manager = CallbackManager(handlers=[cb_handler])
@@ -31,8 +32,8 @@ async def send_request_to_agent_async(question: str, user_id: str, session_id: s
 
     # Initialize our Tools/Experts
 
-    echo_tool = EchoTool()
-    tools = [echo_tool]
+    eligibility_tool = EligibilityTool()
+    tools = [eligibility_tool]
 
     agent = create_openai_tools_agent(llm, tools, CUSTOM_CHATBOT_PROMPT)
     agent_executor = AgentExecutor(agent=agent, tools=tools)
@@ -84,16 +85,20 @@ class EchoTool(BaseTool):
         return text
     
 class EligibilityToolInput(BaseModel):
-    codes: list[str] = Field(description="A list of numeric codes to check the offer eligibility for")
+    codes: list[str] = Field(description="A list of numeric customer attribute codes to check the offer eligibility for")
 
 class EligibilityTool(BaseTool):
     name = "Eligibility"
-    description = "Given a list of numeric customer codes, checks the eligibility for a special offer"
+    description = "Given a list of numeric attribute codes for a single customer, checks the eligibility of that customer for a special offer"
     args_schema: Type[BaseModel] = EligibilityToolInput
     return_direct: bool = False
     
-    def _run(self, codes: list[str], run_manager: Optional[CallbackManagerForToolRun] = None) -> list[tuple[str, bool]]:
-        return []
+    def _run(self, codes: list[str], run_manager: Optional[CallbackManagerForToolRun] = None) -> dict:
+        eligibility = requests.post(url=EligibilityEndpointConfig.ENDPOINT, 
+                      headers={"x-functions-key": EligibilityEndpointConfig.FUNCTION_KEY}, 
+                      json=codes)
+        eligibility.raise_for_status()
+        return eligibility.json()
 
 ### Testing ###
 if (__name__ == "__main__"):
