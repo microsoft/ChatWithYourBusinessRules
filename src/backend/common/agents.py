@@ -36,8 +36,9 @@ async def send_request_to_agent_async(question: str, user_id: str, session_id: s
 
     code_2_text_tool = Code2TextTool(run_manager=cb_manager)
     text_2_code_tool = Text2CodeTool(run_manager=cb_manager)
+    eligibility_tool = EligibilityTool(run_manager=cb_manager)
     
-    tools = [code_2_text_tool, text_2_code_tool]
+    tools = [code_2_text_tool, text_2_code_tool, eligibility_tool]
 
     agent = create_openai_tools_agent(llm, tools, CUSTOM_CHATBOT_PROMPT)
     agent_executor = AgentExecutor(agent=agent, tools=tools)
