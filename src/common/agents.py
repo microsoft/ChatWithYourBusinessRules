@@ -109,9 +109,9 @@ if (__name__ == "__main__"):
     session_id = "5678"
     cb_handler = StdOutCallbackHandler()
 
-    while(question != "exit"):
-        question = input("\n\nEnter a question (or \"exit\" to quit): ")
-        if (question == "exit"):
+    while(question != "quit"):
+        question = input("\n\nEnter a question (or \"quit\"): ")
+        if (question == "quit"):
             break
         answer = asyncio.run(send_request_to_agent_async(question, user_id, session_id, cb_handler))
         ## No need to print, the handler does that
