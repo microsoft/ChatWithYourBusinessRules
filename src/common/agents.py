@@ -201,7 +201,6 @@ class Code2TextTool(BaseTool):
 ### Testing ###
 if (__name__ == "__main__"):
     from callbacks import StdOutCallbackHandler
-    import uuid
 
     question = None
     user_id = "1234"
