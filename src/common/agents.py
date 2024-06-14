@@ -87,9 +87,14 @@ class EchoTool(BaseTool):
 if (__name__ == "__main__"):
     from callbacks import StdOutCallbackHandler
 
-    question = "What is the capital of France?"
+    question = None
     user_id = "1234"
     session_id = "5678"
     cb_handler = StdOutCallbackHandler()
 
-    answer = asyncio.run(send_request_to_agent_async(question, user_id, session_id, cb_handler))
+    while(question != "exit"):
+        question = input("\n\nEnter a question (or \"exit\" to quit): ")
+        if (question == "exit"):
+            break
+        answer = asyncio.run(send_request_to_agent_async(question, user_id, session_id, cb_handler))
+        ## No need to print, the handler does that

@@ -7,6 +7,7 @@ from botbuilder.schema import ChannelAccount, Activity, ActivityTypes
 
 from common.callbacks import BotServiceCallbackHandler
 from common.prompts import WELCOME_MESSAGE
+from common.agents import send_request_to_agent_async
 
 # Bot Class
 class MyBot(ActivityHandler):
@@ -44,7 +45,7 @@ class MyBot(ActivityHandler):
         user_id = turn_context.activity.from_property.id + "-" + turn_context.activity.channel_id
 
         await turn_context.send_activity(Activity(type=ActivityTypes.typing))
-        # TODO: Send the user's input to the agent
+        answer = await send_request_to_agent_async(input_text, user_id, session_id, cb_handler)
         await turn_context.send_activity(answer)
 
 

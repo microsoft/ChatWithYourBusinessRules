@@ -1,3 +1,4 @@
+import asyncio
 from langchain.pydantic_v1 import BaseModel, Field
 from sqlalchemy import create_engine, Column, Integer, String, LargeBinary, Table, MetaData, PrimaryKeyConstraint, select
 from sqlalchemy.orm import sessionmaker, Session, scoped_session
