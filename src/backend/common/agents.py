@@ -1,6 +1,6 @@
 import json, requests
 
-from typing import Type, Optional
+from typing import List, Optional, Type
 import asyncio
 import requests
 
@@ -34,11 +34,19 @@ async def send_request_to_agent_async(question: str, user_id: str, session_id: s
 
     # Initialize our Tools/Experts
 
-    code_2_text_tool = Code2TextTool(run_manager=cb_manager)
-    text_2_code_tool = Text2CodeTool(run_manager=cb_manager)
+    code_2_text_tool = Code2TextTool(run_manager=cb_manager) 
+    text_2_code_tool = Text2CodeTool(run_manager=cb_manager) 
     eligibility_tool = EligibilityTool(run_manager=cb_manager)
+    code_type_tool = CodeTypeTool(run_manager=cb_manager)
+    get_product_by_expression_search_tool = GetProductByExpresionSearchTool(run_manager=cb_manager)
     
-    tools = [code_2_text_tool, text_2_code_tool, eligibility_tool]
+    tools = [
+        code_2_text_tool, 
+        text_2_code_tool, 
+        eligibility_tool,
+        code_type_tool,
+        get_product_by_expression_search_tool
+    ]
 
     agent = create_openai_tools_agent(llm, tools, CUSTOM_CHATBOT_PROMPT)
     agent_executor = AgentExecutor(agent=agent, tools=tools)
@@ -104,32 +112,37 @@ class EligibilityTool(BaseTool):
                       json=codes)
         eligibility.raise_for_status()
         return eligibility.json()
-    
+
 class SearchToolInput(BaseModel):
-    question: str = Field(description="The question to search for")    
- 
+    question: str = Field(description="The question to search for")
+
 class Text2CodeTool(BaseTool):
-    name = "text2code"
-    description = "Translates text phrases to numeric codes"
+    name = "Text2CodeTool"
     args_schema : Type[BaseModel] = SearchToolInput
     return_direct:bool = False    
+    description = """
+    Translates text phrases to numeric codes; check output and promote exact match.
+    Sample phrases:
+    - 'General Market'
+    - 'Internet Essentials'
+    - 'Standard Plus More'
+    """
  
-    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
-       
+    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> List[dict]:      
         headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
         params = {'api-version': AzureSearchConfig.API_VERSION}
                 
         search_payload = {
             "search": question,
             "searchFields": "Short_Descr, Long_Descr",
-            "select": "code",
+            "select": "code, mapping_id, Short_Descr, Long_Descr",
             "queryType": "simple",
             "searchMode": "any",
             "top": 5   
         }
 
         search_url = f"{AzureSearchConfig.ENDPOINT}/indexes/ixcombofieldprodmap/docs/search"       
-        result = "Not found"
+        result = []
 
         try:
             response = requests.post(search_url,
@@ -144,23 +157,40 @@ class Text2CodeTool(BaseTool):
                 
                 temp = []
                 for value in values:
-                    temp.append(value['code'])
-                
-                result = json.dumps(temp)
+                    temp.append({
+                        "code": value["code"],
+                        "type": value["mapping_id"],
+                        "short_descr": value["Short_Descr"],
+                        "long_descr": value["Long_Descr"]
+                    })
+                #result = json.dumps(temp)
+                result = temp
 
         except Exception:
-            # log this 
+            # log this
             pass
 
         return result
 
 class Code2TextTool(BaseTool):
-    name = "code2text"
-    description = "Translates numeric codes into text phrases"
+    name = "Code2TextTool"
     args_schema : Type[BaseModel] = SearchToolInput
     return_direct:bool = False    
- 
-    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
+    description = """
+    Translates boolean expressions with numeric operands into text phrases.
+    Pass only boolean expressions to this tool.
+    Sample input:
+    - '97126'
+    - '97126 and 97350'
+    - '97126 AND 97350'
+    - '97344 OR 97346'
+    - '97344 or 97346'
+    - '9776102856'   ' 
+    """
+
+    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> List[dict]:
+
+        #logger.info("Code2TextExTool called; question = " + question)
 
         headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
         params = {'api-version': AzureSearchConfig.API_VERSION}
@@ -168,7 +198,67 @@ class Code2TextTool(BaseTool):
         search_payload = {
             "search": question,
             "searchFields": "code",
-            "select": "Short_Descr, Long_Descr",
+            "select": "code, mapping_id, Short_Descr, Long_Descr",
+            "queryType": "simple",
+            "searchMode": "all",
+            "top": 5   
+        }
+
+        search_url = f"{AzureSearchConfig.ENDPOINT}/indexes/ixcombofieldprodmap/docs/search" 
+
+        result = []
+        try:
+            response = requests.post(search_url,
+                data=json.dumps(search_payload),
+                headers=headers,
+                params=params
+            )
+
+            response_obj = response.json()
+            values = response_obj['value']
+            if values:
+                
+                temp = []
+                for value in values:
+                    temp.append({
+                        "code": value["code"],
+                        "type": value["mapping_id"],
+                        "short_descr": value['Short_Descr'],
+                        "long_descr": value['Long_Descr']
+                    })                    
+                
+                #result = json.dumps(temp)
+                result = temp
+
+        except Exception:
+            # log this 
+            pass
+
+        return result
+
+class CodeTypeTool(BaseTool):
+    name = "CodeTypeTool"   
+    args_schema : Type[BaseModel] = SearchToolInput
+    return_direct:bool = False    
+    description = """
+    Determines the type of a numeric code; pass only numeric codes to this tool.
+    Sample input:
+    - '109076'
+    - '97406'
+    - '9776102856'
+    """
+ 
+    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
+
+        #logger.info("CodeTypeTool called; question = " + question)
+
+        headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
+        params = {'api-version': AzureSearchConfig.API_VERSION}
+                
+        search_payload = {
+            "search": question,
+            "searchFields": "code",
+            "select": "mapping_id",
             "queryType": "simple",
             "searchMode": "any",
             "top": 5   
@@ -190,9 +280,68 @@ class Code2TextTool(BaseTool):
                 
                 temp = []
                 for value in values:
+                    temp.append(value["mapping_id"])                    
+                         
+                result = json.dumps(temp)
+
+        except Exception:
+            # log this 
+            pass
+
+        return result
+
+class SearchToolInput(BaseModel):
+    expressions: List[str] = Field(description="The expressions to search for")
+
+class GetProductByExpresionSearchTool(BaseTool):
+    name = "GetProductByExpresionSearchTool"
+    args_schema : Type[BaseModel] = SearchToolInput
+    return_direct:bool = False
+    description = """
+    Search for a **product** using a list of text expressions.
+    Do not pass numeric codes or expressions to this function.
+    Pass only a list of text descriptions.
+    Sample input:
+    - ['General Market']
+    - ['Internet Essentials']
+    - ['General Market', 'Internet Essentials']
+    """
+
+    def _run(self, expressions: List[str], run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
+
+        #logger.info("GetProductByExpresionSearchTool called; question = " + json.dumps(expressions))
+
+        headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
+        params = {'api-version': AzureSearchConfig.API_VERSION}
+                
+        search_payload = {
+            "search": question,
+            "searchFields": "expanded_value",
+            "select": "id, name",
+            "queryType": "simple",
+            "searchMode": "any",
+            "top": 5   
+        }
+
+        search_url = f"{AzureSearchConfig.ENDPOINT}/indexes/ixenhancedproductmapping/docs/search" 
+
+        result = "Not found"
+        try:
+            response = requests.post(search_url,
+                data=json.dumps(search_payload),
+                headers=headers,
+                params=params
+            )
+
+            response_obj = response.json()
+            values = response_obj['value']
+            if values:
+                
+                temp = []
+                for value in values:
                     temp.append({
-                        "Short_Descr": value['Short_Descr'],
-                        "Long_Descr": value['Long_Descr']
+                        "code": value["id"],
+                        "name": value["name"]
                     })                    
                 
                 result = json.dumps(temp)
@@ -202,7 +351,6 @@ class Code2TextTool(BaseTool):
             pass
 
         return result
-
 
 ### Testing ###
 if (__name__ == "__main__"):
