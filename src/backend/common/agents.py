@@ -17,7 +17,6 @@ from langchain.callbacks.manager import CallbackManagerForToolRun
 
 from opentelemetry.instrumentation.langchain import LangchainInstrumentor
 from promptflow.tracing import trace, start_trace
-from promptflow.core import tool
 
 from prompts import CUSTOM_CHATBOT_PROMPT
 from session_history import get_session_history
