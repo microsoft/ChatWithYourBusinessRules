@@ -121,11 +121,12 @@ class Text2CodeTool(BaseTool):
     args_schema : Type[BaseModel] = SearchToolInput
     return_direct:bool = False    
     description = """
-    Translates text phrases to numeric codes; check output and promote exact match.
+    Translates text phrases to numeric codes; check output and *promote* exact match.
     Sample phrases:
     - 'General Market'
     - 'Internet Essentials'
     - 'Standard Plus More'
+    - 'Basic TV and Gig Extra (1.2Gbps) for $160'
     """
  
     def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> List[dict]:      
@@ -138,7 +139,7 @@ class Text2CodeTool(BaseTool):
             "select": "code, mapping_id, Short_Descr, Long_Descr",
             "queryType": "simple",
             "searchMode": "any",
-            "top": 5   
+            "top": 10   
         }
 
         search_url = f"{AzureSearchConfig.ENDPOINT}/indexes/ixcombofieldprodmap/docs/search"       
@@ -355,6 +356,9 @@ class GetProductByExpresionSearchTool(BaseTool):
 ### Testing ###
 if (__name__ == "__main__"):
     from callbacks import StdOutCallbackHandler
+    import logging
+
+    #logging.basicConfig(level=logging.INFO)
 
     question = None
     user_id = "1234"
