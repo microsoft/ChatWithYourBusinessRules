@@ -331,10 +331,8 @@ if (__name__ == "__main__"):
         instrumentor.instrument()
 
     question = None
-    user_id = "a12b4a3d-67f8-43fe-89b5-6cb65dde24e2"
-    session_id = "620993e1-e18c-4769-96a3-e1ca5a2a6609"
-    # user_id = "1234"
-    # session_id = "5678"
+    user_id = "1234"
+    session_id = "5678"
     cb_handler = StdOutCallbackHandler()
 
     while(question != "quit"):
