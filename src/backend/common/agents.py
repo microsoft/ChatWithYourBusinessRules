@@ -114,7 +114,7 @@ class Text2CodeTool(BaseTool):
     return_direct:bool = False    
  
     @trace
-    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
+    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> List[dict]:
        
         headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
         params = {'api-version': AzureSearchConfig.API_VERSION}
@@ -144,13 +144,21 @@ class Text2CodeTool(BaseTool):
                 
                 temp = []
                 for value in values:
-                    temp.append({
-                        "code": value["code"],
-                        "type": value["mapping_id"],
-                        "short_descr": value["Short_Descr"],
-                        "long_descr": value["Long_Descr"]
-                    })
-                #result = json.dumps(temp)
+                    if value["Short_Descr"].lower() == question.lower() or value["Long_Descr"].lower() == question.lower():
+                        temp = [{
+                            "code": value["code"],
+                            "type": value["mapping_id"],
+                            "short_descr": value["Short_Descr"],
+                            "long_descr": value["Long_Descr"]
+                        }]
+                        break
+                    else:
+                        temp.append({
+                            "code": value["code"],
+                            "type": value["mapping_id"],
+                            "short_descr": value["Short_Descr"],
+                            "long_descr": value["Long_Descr"]
+                        })
                 result = temp
 
         except Exception:
@@ -190,18 +198,25 @@ class Code2TextTool(BaseTool):
 
             response_obj = response.json()
             values = response_obj['value']
-            if values:
-                
+            if values:                       
                 temp = []
                 for value in values:
-                    temp.append({
-                        "code": value["code"],
-                        "type": value["mapping_id"],
-                        "short_descr": value['Short_Descr'],
-                        "long_descr": value['Long_Descr']
-                    })                    
-                
-                #result = json.dumps(temp)
+                    if value["code"] == question:
+                        temp = [{
+                            "code": value["code"],
+                            "type": value["mapping_id"],
+                            "short_descr": value['Short_Descr'],
+                            "long_descr": value['Long_Descr']
+                        }]
+                        break
+                    else:
+                        temp.append({
+                            "code": value["code"],
+                            "type": value["mapping_id"],
+                            "short_descr": value['Short_Descr'],
+                            "long_descr": value['Long_Descr']
+                        })
+                               
                 result = temp
 
         except Exception:
@@ -217,7 +232,7 @@ class CodeTypeTool(BaseTool):
     return_direct:bool = False    
  
     @trace
-    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
+    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> List[str]:
         headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
         params = {'api-version': AzureSearchConfig.API_VERSION}
                 
@@ -248,7 +263,7 @@ class CodeTypeTool(BaseTool):
                 for value in values:
                     temp.append(value["mapping_id"])                    
                          
-                result = json.dumps(temp)
+                result = temp
 
         except Exception:
             # log this 
@@ -265,7 +280,7 @@ class GetProductByExpresionSearchTool(BaseTool):
     description = prompts.GET_PRODUCT_BY_EXPRESSION_SEARCH_TOOL_DESCRIPTION
     return_direct:bool = False
     
-    def _run(self, expressions: List[str], run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
+    def _run(self, expressions: List[str], run_manager:Optional[CallbackManagerForToolRun]=None) -> List[dict]:
         headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
         params = {'api-version': AzureSearchConfig.API_VERSION}
                 
@@ -297,9 +312,8 @@ class GetProductByExpresionSearchTool(BaseTool):
                     temp.append({
                         "code": value["id"],
                         "name": value["name"]
-                    })                    
-                
-                result = json.dumps(temp)
+                    })                                    
+                result = temp
 
         except Exception:
             # log this 
@@ -317,8 +331,10 @@ if (__name__ == "__main__"):
         instrumentor.instrument()
 
     question = None
-    user_id = "1234"
-    session_id = "5678"
+    user_id = "a12b4a3d-67f8-43fe-89b5-6cb65dde24e2"
+    session_id = "620993e1-e18c-4769-96a3-e1ca5a2a6609"
+    # user_id = "1234"
+    # session_id = "5678"
     cb_handler = StdOutCallbackHandler()
 
     while(question != "quit"):
