@@ -1,0 +1,47 @@
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+####### Welcome Message for the Bot Service #################
+WELCOME_MESSAGE = """
+"""
+#############################################################
+
+####### Chat Bot Instructions ###############################
+CUSTOM_CHATBOT_PREFIX = """
+"""
+#############################################################
+
+####### Chat Bot Prompt #####################################
+CUSTOM_CHATBOT_PROMPT = ChatPromptTemplate.from_messages(
+    [
+        ("system", CUSTOM_CHATBOT_PREFIX),
+        MessagesPlaceholder(variable_name='history', optional=True),
+        ("human", "{question}"),
+        MessagesPlaceholder(variable_name='agent_scratchpad')
+    ]
+)
+#############################################################
+
+####### Eligibility Tool Description ########################
+ELIGIBILITY_TOOL_DESCRIPTION = """
+"""
+#############################################################
+
+####### Test2CodeTool Description ###########################
+TEXT_2_CODE_TOOL_DESCRIPTION = """
+"""
+#############################################################
+
+####### Code2TextTool Description ###########################
+CODE_2_TEXT_TOOL_DESCRIPTION = """
+"""
+#############################################################
+
+####### CodeTypeTool Description ############################
+CODE_TYPE_TOOL_DESCRPTION = """
+"""
+#############################################################
+
+####### Get Product By Expression Search Tool Description ###
+GET_PRODUCT_BY_EXPRESSION_SEARCH_TOOL_DESCRIPTION = """
+"""
+#############################################################
