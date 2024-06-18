@@ -1,6 +1,6 @@
 import json, requests
 
-from typing import Type, Optional
+from typing import List, Optional, Type
 import asyncio
 import requests
 
@@ -18,7 +18,7 @@ from langchain.callbacks.manager import CallbackManagerForToolRun
 from opentelemetry.instrumentation.langchain import LangchainInstrumentor
 from promptflow.tracing import trace, start_trace
 
-from prompts import CUSTOM_CHATBOT_PROMPT
+import scenario_prompts as prompts
 from session_history import get_session_history
 from config import AzureOpenAIConfig, AzureSearchConfig, EligibilityEndpointConfig
 
@@ -38,13 +38,19 @@ async def send_request_to_agent_async(question: str, user_id: str, session_id: s
 
     # Initialize our Tools/Experts
 
-    code_2_text_tool = Code2TextTool(run_manager=cb_manager)
-    text_2_code_tool = Text2CodeTool(run_manager=cb_manager)
+    code_2_text_tool = Code2TextTool(run_manager=cb_manager) 
+    text_2_code_tool = Text2CodeTool(run_manager=cb_manager) 
     eligibility_tool = EligibilityTool(run_manager=cb_manager)
+    code_type_tool = CodeTypeTool(run_manager=cb_manager)
     
-    tools = [code_2_text_tool, text_2_code_tool, eligibility_tool]
+    tools = [
+        code_2_text_tool, # Core Tool
+        text_2_code_tool, # Core Tool
+        eligibility_tool, # Core Tool
+        code_type_tool
+    ]
 
-    agent = create_openai_tools_agent(llm, tools, CUSTOM_CHATBOT_PROMPT)
+    agent = create_openai_tools_agent(llm, tools, prompts.CUSTOM_CHATBOT_PROMPT)
     agent_executor = AgentExecutor(agent=agent, tools=tools)
     brain_agent_executor = RunnableWithMessageHistory(
         agent_executor,
@@ -80,27 +86,14 @@ async def send_request_to_agent_async(question: str, user_id: str, session_id: s
 #####################################################################################################
 ############################### AGENTS AND TOOL CLASSES #############################################
 #####################################################################################################
-
-class EchoToolInput(BaseModel):
-    text: str = Field(description="The text to echo back")
-
-class EchoTool(BaseTool):
-    name = "Echo"
-    description = "Echoes back the input text"
-    args_schema: Type[BaseModel] = EchoToolInput
-    return_direct: bool = False
-    
-    @trace
-    def _run(self, text: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        return text
     
 class EligibilityToolInput(BaseModel):
     codes: list[str] = Field(description="A list of numeric customer attribute codes to check the offer eligibility for")
 
 class EligibilityTool(BaseTool):
-    name = "Eligibility"
-    description = "Given a list of numeric attribute codes for a single customer, checks the eligibility of that customer for a special offer"
+    name = "Eligibility"    
     args_schema: Type[BaseModel] = EligibilityToolInput
+    description = prompts.ELIGIBILITY_TOOL_DESCRIPTION
     return_direct: bool = False
     
     @trace
@@ -110,33 +103,33 @@ class EligibilityTool(BaseTool):
                       json=codes)
         eligibility.raise_for_status()
         return eligibility.json()
-    
+
 class SearchToolInput(BaseModel):
     question: str = Field(description="The question to search for")    
 
 class Text2CodeTool(BaseTool):
-    name = "text2code"
-    description = "Translates text phrases to numeric codes"
+    name = "Text2CodeTool"
     args_schema : Type[BaseModel] = SearchToolInput
+    description = prompts.TEXT_2_CODE_TOOL_DESCRIPTION
     return_direct:bool = False    
  
     @trace
-    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
+    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> List[dict]:
        
         headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
         params = {'api-version': AzureSearchConfig.API_VERSION}
-                
+
         search_payload = {
             "search": question,
             "searchFields": "Short_Descr, Long_Descr",
-            "select": "code",
+            "select": "code, mapping_id, Short_Descr, Long_Descr",
             "queryType": "simple",
             "searchMode": "any",
-            "top": 5   
+            "top": 10   
         }
 
         search_url = f"{AzureSearchConfig.ENDPOINT}/indexes/ixcombofieldprodmap/docs/search"       
-        result = "Not found"
+        result = []
 
         try:
             response = requests.post(search_url,
@@ -151,9 +144,80 @@ class Text2CodeTool(BaseTool):
                 
                 temp = []
                 for value in values:
-                    temp.append(value['code'])
+                    if value["Short_Descr"].lower() == question.lower() or value["Long_Descr"].lower() == question.lower():
+                        temp = [{
+                            "code": value["code"],
+                            "type": value["mapping_id"],
+                            "short_descr": value["Short_Descr"],
+                            "long_descr": value["Long_Descr"]
+                        }]
+                        break
+                    else:
+                        temp.append({
+                            "code": value["code"],
+                            "type": value["mapping_id"],
+                            "short_descr": value["Short_Descr"],
+                            "long_descr": value["Long_Descr"]
+                        })
+                result = temp
+
+        except Exception:
+            # log this
+            pass
+
+        return result
+
+class Code2TextTool(BaseTool):
+    name = "Code2TextTool"
+    args_schema : Type[BaseModel] = SearchToolInput
+    description = prompts.CODE_2_TEXT_TOOL_DESCRIPTION
+    return_direct:bool = False    
+    
+    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> List[dict]:
+        headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
+        params = {'api-version': AzureSearchConfig.API_VERSION}
                 
-                result = json.dumps(temp)
+        search_payload = {
+            "search": question,
+            "searchFields": "code",
+            "select": "code, mapping_id, Short_Descr, Long_Descr",
+            "queryType": "simple",
+            "searchMode": "all",
+            "top": 5   
+        }
+
+        search_url = f"{AzureSearchConfig.ENDPOINT}/indexes/ixcombofieldprodmap/docs/search" 
+
+        result = []
+        try:
+            response = requests.post(search_url,
+                data=json.dumps(search_payload),
+                headers=headers,
+                params=params
+            )
+
+            response_obj = response.json()
+            values = response_obj['value']
+            if values:                       
+                temp = []
+                for value in values:
+                    if value["code"] == question:
+                        temp = [{
+                            "code": value["code"],
+                            "type": value["mapping_id"],
+                            "short_descr": value['Short_Descr'],
+                            "long_descr": value['Long_Descr']
+                        }]
+                        break
+                    else:
+                        temp.append({
+                            "code": value["code"],
+                            "type": value["mapping_id"],
+                            "short_descr": value['Short_Descr'],
+                            "long_descr": value['Long_Descr']
+                        })
+                               
+                result = temp
 
         except Exception:
             # log this 
@@ -161,22 +225,21 @@ class Text2CodeTool(BaseTool):
 
         return result
 
-class Code2TextTool(BaseTool):
-    name = "code2text"
-    description = "Translates numeric codes into text phrases"
+class CodeTypeTool(BaseTool):
+    name = "CodeTypeTool"   
     args_schema : Type[BaseModel] = SearchToolInput
+    description = prompts.CODE_TYPE_TOOL_DESCRPTION
     return_direct:bool = False    
  
     @trace
-    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
-
+    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> List[str]:
         headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
         params = {'api-version': AzureSearchConfig.API_VERSION}
                 
         search_payload = {
             "search": question,
             "searchFields": "code",
-            "select": "Short_Descr, Long_Descr",
+            "select": "mapping_id",
             "queryType": "simple",
             "searchMode": "any",
             "top": 5   
@@ -198,12 +261,9 @@ class Code2TextTool(BaseTool):
                 
                 temp = []
                 for value in values:
-                    temp.append({
-                        "Short_Descr": value['Short_Descr'],
-                        "Long_Descr": value['Long_Descr']
-                    })                    
-                
-                result = json.dumps(temp)
+                    temp.append(value["mapping_id"])                    
+                         
+                result = temp
 
         except Exception:
             # log this 
@@ -211,7 +271,56 @@ class Code2TextTool(BaseTool):
 
         return result
 
+class SearchToolInput(BaseModel):
+    expressions: List[str] = Field(description="The expressions to search for")
 
+class GetProductByExpresionSearchTool(BaseTool):
+    name = "GetProductByExpresionSearchTool"
+    args_schema : Type[BaseModel] = SearchToolInput
+    description = prompts.GET_PRODUCT_BY_EXPRESSION_SEARCH_TOOL_DESCRIPTION
+    return_direct:bool = False
+    
+    def _run(self, expressions: List[str], run_manager:Optional[CallbackManagerForToolRun]=None) -> List[dict]:
+        headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
+        params = {'api-version': AzureSearchConfig.API_VERSION}
+                
+        search_payload = {
+            "search": str(expressions),
+            "searchFields": "expanded_value",
+            "select": "id, name",
+            "queryType": "simple",
+            "searchMode": "any",
+            "top": 5   
+        }
+
+        search_url = f"{AzureSearchConfig.ENDPOINT}/indexes/ixenhancedproductmapping/docs/search" 
+
+        result = "Not found"
+        try:
+            response = requests.post(search_url,
+                data=json.dumps(search_payload),
+                headers=headers,
+                params=params
+            )
+
+            response_obj = response.json()
+            values = response_obj['value']
+            if values:
+                
+                temp = []
+                for value in values:
+                    temp.append({
+                        "code": value["id"],
+                        "name": value["name"]
+                    })                                    
+                result = temp
+
+        except Exception:
+            # log this 
+            pass
+
+        return result
+            
 ### Testing ###
 if (__name__ == "__main__"):
     from callbacks import StdOutCallbackHandler

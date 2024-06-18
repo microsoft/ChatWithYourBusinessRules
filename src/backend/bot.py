@@ -6,7 +6,7 @@ from botbuilder.core import ActivityHandler, TurnContext
 from botbuilder.schema import ChannelAccount, Activity, ActivityTypes
 
 from common.callbacks import BotServiceCallbackHandler
-from common.prompts import WELCOME_MESSAGE
+from common.scenario_prompts import WELCOME_MESSAGE
 from common.agents import send_request_to_agent_async
 
 # Bot Class
