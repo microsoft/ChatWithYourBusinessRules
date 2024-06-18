@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3``
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 import os
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path='credentials.env')
+load_dotenv(dotenv_path='../credentials.env')
 
 class BotConfig:
     """ Bot Configuration """

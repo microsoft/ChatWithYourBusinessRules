@@ -15,11 +15,14 @@ from langchain.tools import BaseTool
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.callbacks.manager import CallbackManagerForToolRun
 
-import scenario_prompts as prompts
+from opentelemetry.instrumentation.langchain import LangchainInstrumentor
+from promptflow.tracing import trace, start_trace
 
+import scenario_prompts as prompts
 from session_history import get_session_history
 from config import AzureOpenAIConfig, AzureSearchConfig, EligibilityEndpointConfig
 
+@trace
 async def send_request_to_agent_async(question: str, user_id: str, session_id: str, cb_handler: BaseCallbackHandler):
     cb_manager = CallbackManager(handlers=[cb_handler])
 
@@ -92,8 +95,9 @@ class EligibilityTool(BaseTool):
     args_schema: Type[BaseModel] = EligibilityToolInput
     description = prompts.ELIGIBILITY_TOOL_DESCRIPTION
     return_direct: bool = False
-        
-    def _run(self, codes: list[str], run_manager: Optional[CallbackManagerForToolRun] = None) -> dict:        
+    
+    @trace
+    def _run(self, codes: list[str], run_manager: Optional[CallbackManagerForToolRun] = None) -> dict:
         eligibility = requests.post(url=EligibilityEndpointConfig.ENDPOINT, 
                       headers={"x-functions-key": EligibilityEndpointConfig.FUNCTION_KEY}, 
                       json=codes)
@@ -101,15 +105,17 @@ class EligibilityTool(BaseTool):
         return eligibility.json()
 
 class SearchToolInput(BaseModel):
-    question: str = Field(description="The question to search for")
+    question: str = Field(description="The question to search for")    
 
 class Text2CodeTool(BaseTool):
     name = "Text2CodeTool"
     args_schema : Type[BaseModel] = SearchToolInput
     description = prompts.TEXT_2_CODE_TOOL_DESCRIPTION
     return_direct:bool = False    
-     
-    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> List[dict]:      
+ 
+    @trace
+    def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
+       
         headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
         params = {'api-version': AzureSearchConfig.API_VERSION}
 
@@ -209,7 +215,8 @@ class CodeTypeTool(BaseTool):
     args_schema : Type[BaseModel] = SearchToolInput
     description = prompts.CODE_TYPE_TOOL_DESCRPTION
     return_direct:bool = False    
-    
+ 
+    @trace
     def _run(self, question:str, run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
         headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
         params = {'api-version': AzureSearchConfig.API_VERSION}
@@ -303,6 +310,11 @@ class GetProductByExpresionSearchTool(BaseTool):
 ### Testing ###
 if (__name__ == "__main__"):
     from callbacks import StdOutCallbackHandler
+
+    start_trace()
+    instrumentor = LangchainInstrumentor()
+    if not instrumentor.is_instrumented_by_opentelemetry:
+        instrumentor.instrument()
 
     question = None
     user_id = "1234"
