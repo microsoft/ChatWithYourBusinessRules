@@ -27,4 +27,6 @@ pydantic==1.10.13
 fastapi
 aiohttp
 requests
-json
+promptflow
+promptflow-tools
+opentelemetry-instrumentation-langchain
