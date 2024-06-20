@@ -1,13 +1,11 @@
-using System.Configuration;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Azure.Functions.Worker.Extensions.Sql;
 using Microsoft.Extensions.Logging;
 using RulesEngine.Models;
-using System.Text;
-using System.Text.Json;
+using ChatWithYourBusinessRules.Contracts;
+using ChatWithYourBusinessRules.Models;
 
 namespace ChatWithYourBusinessRules;
 
@@ -15,80 +13,54 @@ public class GetEligibility
 {
     private readonly ILogger<GetEligibility> _logger;
 
-    public GetEligibility(ILogger<GetEligibility> logger)
+    private readonly IDatabaseRulesRepository _databaseRulesRepository;
+
+    public GetEligibility(
+        ILogger<GetEligibility> logger,
+        IDatabaseRulesRepository databaseRulesRepository)
     {
         _logger = logger;
+        _databaseRulesRepository = databaseRulesRepository;
     }
 
     [Function("GetEligibility")]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req,
-        [SqlInput(
-            "SELECT [RuleName], [Properties], [Operator], [ErrorMessage], [Enabled], [RuleExpressionType], [Expression], [Actions], [SuccessEvent], [RuleNameFK], [WorkflowName] FROM [dbo].[Rules] WHERE [WorkflowName] LIKE 'Eligibility'",
-            "RulesDataConnectionString"
-        )] IEnumerable<DatabaseRule> databaseRules)
+        [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
     {
         _logger.LogInformation("C# HTTP trigger function processed a request.");
-        
-        using var reader = new StreamReader(req.Body);
-        var requestBody = await reader.ReadToEndAsync();
-        List<string>? input = JsonSerializer.Deserialize<List<string>>(requestBody);
-        if (input == null) return new BadRequestObjectResult("Please provide a list of strings in the request body");
+        var results = new Dictionary<string, bool>();
 
-        var rules = GetRules(databaseRules);
-        var workflow = new Workflow
+        try
         {
-            WorkflowName = "Eligibility",
-            Rules = rules
-        };
-
-        var engine = new RulesEngine.RulesEngine(new[] { workflow });
-        var results = await engine.ExecuteAllRulesAsync("Eligibility", input);
-        var eligibilities = new Dictionary<string, bool>();
-        foreach (var result in results)
-        {
-            eligibilities[result.Rule.RuleName] = result.IsSuccess;
-        }
-
-        return new OkObjectResult(eligibilities);
-    }
-
-    private static List<Rule> GetRules(IEnumerable<DatabaseRule> databaseRules)
-    {
-        var ruleDictionary = new Dictionary<string, Rule>();
-        var rootRules = new List<Rule>();
-
-        foreach (var databaseRule in databaseRules)
-        {
-            var rule = new Rule
+            using var reader = new StreamReader(req.Body);
+            var body = await reader.ReadToEndAsync();
+            var attributes = JsonSerializer.Deserialize<List<string>>(body);
+            if (attributes == null)
             {
-                RuleName = databaseRule.RuleName,
-                Operator = databaseRule.Operator,
-                Expression = databaseRule.Expression,
-                Rules = new List<Rule>()
+                return new BadRequestObjectResult("Inavlid input; expected a list of attributes.");
+            }
+
+            var databaseRules = await _databaseRulesRepository.GetRulesAsync("Eligibility");
+            var rules = RuleConverter.ConvertToRules(databaseRules.ToList());
+            var workflow = new Workflow
+            {
+                WorkflowName = "Eligibility",
+                Rules = rules
             };
 
-            ruleDictionary[databaseRule.RuleName] = rule;
-        }
-
-        foreach (var databaseRule in databaseRules)
-        {
-            if (!string.IsNullOrEmpty(databaseRule.RuleNameFK))
+            var engine = new RulesEngine.RulesEngine(new[] { workflow });
+            var engineResults = await engine.ExecuteAllRulesAsync("Eligibility", attributes);
+            foreach (var result in engineResults)
             {
-                var parentRule = ruleDictionary[databaseRule.RuleNameFK];
-                var childRule = ruleDictionary[databaseRule.RuleName];
-                ((List<Rule>)parentRule.Rules).Add(childRule);
+                results[result.Rule.RuleName] = result.IsSuccess;
             }
         }
-
-        foreach (var rule in ruleDictionary.Values)
+        catch (Exception ex)
         {
-            if (!databaseRules.Any(dr => dr.RuleName == rule.RuleName && !string.IsNullOrEmpty(dr.RuleNameFK)))
-            {
-                rootRules.Add(rule);
-            }
+            _logger.LogError(ex, "Error getting eligibility");
+            return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
 
-        return rootRules;
+        return new OkObjectResult(results);
     }
 }
