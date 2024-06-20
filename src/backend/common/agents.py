@@ -324,6 +324,7 @@ class GetProductByExpresionSearchTool(BaseTool):
 ### Testing ###
 if (__name__ == "__main__"):
     from callbacks import StdOutCallbackHandler
+    import uuid
 
     start_trace()
     instrumentor = LangchainInstrumentor()
@@ -331,8 +332,8 @@ if (__name__ == "__main__"):
         instrumentor.instrument()
 
     question = None
-    user_id = "1234"
-    session_id = "5678"
+    user_id = "debug-user"
+    session_id = str(uuid.uuid4())
     cb_handler = StdOutCallbackHandler()
 
     while(question != "quit"):
