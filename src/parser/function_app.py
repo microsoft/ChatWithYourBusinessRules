@@ -1,4 +1,4 @@
-import json, hashlib, logging, os
+import datetime, json, hashlib, logging, os
 import azure.functions as func
 import azure.durable_functions as df
 
@@ -24,19 +24,25 @@ def process_changes_orchestrator(context):
     changes = context.get_input()
     changes_obj = json.loads(changes)
     
-    maps = yield context.call_activity("get_maps", "get_maps_input")
+    retry_options = df.RetryOptions(
+        first_retry_interval=datetime.timedelta(seconds=5), 
+        max_number_of_attempts=5,
+        backoff_coefficient=2)
+    
+    maps = yield context.call_activity_with_retry("get_maps", retry_options, "get_maps_input")
+
     for change in changes_obj:
         if ((change["Operation"] == constants.SQL_INSERT) or (change["Operation"] == constants.SQL_UPDATE)):
             enriched_changes = yield context.call_activity("enrich_changes", { "Map1": maps[0], "Map2": maps[1], "Map3": maps[2], "Item": change["Item"] })
-            translated_changes = yield context.call_activity("translate_changes", enriched_changes)
-            yield context.call_activity("process_upsert", translated_changes)
+            translated_changes = yield context.call_activity_with_retry("translate_changes", retry_options, enriched_changes)
+            yield context.call_activity_with_retry("process_upsert", retry_options, translated_changes)
 
-            yield context.call_activity("clean_rules_data", change["Item"]["id"]) # clean rules database
-            yield context.call_activity("process_workflow", "Eligibility") # make sure we have a default workflow in place
-            yield context.call_activity("process_rules", change["Item"]) # convert expression into a database compatible structure and insert into database
+            yield context.call_activity_with_retry("clean_rules_data", retry_options, change["Item"]["id"]) # clean rules database
+            yield context.call_activity_with_retry("process_workflow", retry_options, "Eligibility") # make sure we have a default workflow in place
+            yield context.call_activity_with_retry("process_rules", retry_options, change["Item"]) # convert expression into a database compatible structure and insert into database
         elif (change["Operation"] == constants.SQL_DELETE):
-            yield context.call_activity("process_delete", change["Item"]["id"])
-            yield context.call_activity("clean_rules_data", change["Item"]["id"]) 
+            yield context.call_activity_with_retry("process_delete", retry_options, change["Item"]["id"])
+            yield context.call_activity_with_retry("clean_rules_data", retry_options, change["Item"]["id"]) 
         else:
             logging.warning("process_changes_orchestrator received an unsupported change type")
 
