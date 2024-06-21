@@ -23,27 +23,15 @@ The Bot Interface is just a window to a Bot Service app hosted in Azure.
 
 It has access to the following tools/pluggins:
 
-- Bing Search (***use @bing in your question***)
-- ChatGPT for common knowledge (***use @chatgpt in your question***)
-- Azure SQL for covid statistics data (***use @sqlsearch in your question***)
-- Azure Search for documents knowledge - Arxiv papers and Covid Articles (***use @docsearch in your question***)
-- Azure Search for books knowledge - 5 PDF books (***use @booksearch in your question***)
-- API Search for real-time covid statistics for US States, Countries and Continents (***use @apisearch in your question***)
-
-Note: If you don't use any of the tool names beginning with @, the bot will try to use it's own knowledge or tool available to answer the question.
+- Eligibility Tool
+- Text to Code Tool
+- Code to Text Tool
+- Get Product by Expression Tool
 
 Example questions:
 
-- Hello, my name is Bob, what's yours?
-- @bing, What's the main economic news of today?
-- @chatgpt, How do I cook a chocolate cake?
-- @booksearch, what normally rich dad do that is different from poor dad?
-- @docsearch, Why Covid doesn't affect kids that much compared to adults?
-- @apisearch, What is the state with most covid deaths in USA?
-- @sqlsearch, How many people where hospitalized in Arkansas in June 2020?
-- @docsearch, List the authors that talk about Boosting Algorithms
-- @bing, what movies are showing tonight in Seattle?
-- Please tell me a joke
+- What is the code for Sales?
+- What does code 12345 mean?
     """)
 
 st.markdown("""
