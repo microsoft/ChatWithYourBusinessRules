@@ -2,6 +2,7 @@ import json, requests
 
 from typing import List, Optional, Type
 import asyncio
+import hashlib
 import requests
 
 from langchain_openai import AzureChatOpenAI
@@ -42,12 +43,14 @@ async def send_request_to_agent_async(question: str, user_id: str, session_id: s
     text_2_code_tool = Text2CodeTool(run_manager=cb_manager) 
     eligibility_tool = EligibilityTool(run_manager=cb_manager)
     code_type_tool = CodeTypeTool(run_manager=cb_manager)
+    get_expression_meaning_tool = GetExpressionMeaningTool(run_manager=cb_manager)
     
     tools = [
         code_2_text_tool, # Core Tool
         text_2_code_tool, # Core Tool
         eligibility_tool, # Core Tool
-        code_type_tool
+        code_type_tool,
+        get_expression_meaning_tool
     ]
 
     agent = create_openai_tools_agent(llm, tools, prompts.CUSTOM_CHATBOT_PROMPT)
@@ -320,9 +323,93 @@ class GetProductByExpresionSearchTool(BaseTool):
             pass
 
         return result
-            
+
+class GetExpressionMeaningToolInput(BaseModel):
+    expression: str = Field(description="The expression to search for")
+
+class GetExpressionMeaningTool(BaseTool):
+    name = "GetExpressonMeaningTool"
+    args_schema : Type[BaseModel] = GetExpressionMeaningToolInput
+    description = "Returns the meaning of boolean expressions comprised of numerical operands and logical operators"
+    return_direct:bool = False
+
+    def _run(self, expression: str, run_manager:Optional[CallbackManagerForToolRun]=None) -> str:
+        result = expression
+
+        try:
+            values = []
+            skip = 0
+
+            while True:
+                results = self.__get_search_results__(skip)
+                subset = results["value"]
+                values.extend(subset)
+
+                if len(subset) < 50:
+                    break
+
+                skip += 50
+
+            for item in values:
+                item["hash"] = self.__get_hash__(item["code"])
+
+            affiliates = sorted([item for item in values if item["mapping_id"] == "affiliate"], key=lambda x: len(x), reverse=True)
+            lobs = sorted([item for item in values if item["mapping_id"] == "lob"], key=lambda x: len(x), reverse=True)
+            customfields = sorted([item for item in values if item["mapping_id"] == "customfield"], key=lambda x: len(x), reverse=True)
+
+            for item in affiliates:
+                result = result.replace(item["code"], item["hash"])
+
+            for item in lobs:
+                result = result.replace(item["code"], item["hash"])
+
+            for item in customfields:
+                result = result.replace(item["code"], item["hash"])
+
+            for item in affiliates:
+                result = result.replace(item["hash"], f"[{item['Long_Descr']}]")
+
+            for item in lobs:
+                result = result.replace(item["hash"], f"[{item['Long_Descr']}]")
+
+            for item in customfields:
+                result = result.replace(item["hash"], f"[{item['Long_Descr']}]")   
+
+        except Exception:
+            pass
+
+        return result
+    
+    def __get_search_results__(self, skip):
+        headers = {'Content-Type': 'application/json','api-key': AzureSearchConfig.SEARCH_KEY}
+        params = {'api-version': AzureSearchConfig.API_VERSION}
+                
+        search_payload = {
+            "search": "*",
+            "select": "code, mapping_id, Short_Descr, Long_Descr",
+            "queryType": "simple", 
+            "top": 50,
+            "skip": skip
+        } 
+
+        search_url = f"{AzureSearchConfig.ENDPOINT}/indexes/ixcombofieldprodmap/docs/search"
+        response = requests.post(search_url,
+            data=json.dumps(search_payload),
+            headers=headers,
+            params=params
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def __get_hash__(self, input_string):
+        sha1_hash = hashlib.sha1()
+        sha1_hash.update(input_string.encode('utf-8'))
+        hex_digest = sha1_hash.hexdigest()
+        return '#'.join(hex_digest[i:i+2] for i in range(0, len(hex_digest), 2))
+
 ### Testing ###
 if (__name__ == "__main__"):
+    import uuid
     from callbacks import StdOutCallbackHandler
 
     start_trace()
@@ -331,8 +418,10 @@ if (__name__ == "__main__"):
         instrumentor.instrument()
 
     question = None
-    user_id = "1234"
-    session_id = "5678"
+    #user_id = "1234"
+    #session_id = "5678"
+    user_id = str(uuid.uuid4())
+    session_id = str(uuid.uuid4())
     cb_handler = StdOutCallbackHandler()
 
     while(question != "quit"):
